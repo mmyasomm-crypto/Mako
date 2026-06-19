@@ -23,7 +23,7 @@ MAKO isn't just a UI project; it represents a functional platform architecture. 
 
 ## 📝 How to run
 1. Clone the repository: `git clone https://github.com/mmyasomm-crypto/Mako`
-2. Open `index.html` in your browser.
+2. Open `index.html` in your browser https://mmyasomm-crypto.github.io/Mako.
 
 ---
 *Built by Yassin - A passionate Web Developer.*
