@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAKO | منصة الدليفري الاحترافية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+        /* المتغيرات الأساسية للألوان لتسهيل التبديل */
+        :root {
+            --bg-main: #0b1329;
+            --bg-card: #1c2541;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(0, 180, 216, 0.15);
+            --header-bg: #0b1329;
+            --accent: #00b4d8;
+        }
+
+        /* ألوان الوضع المضيء (Light Mode) */
+        [data-theme="light"] {
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: rgba(0, 180, 216, 0.3);
+            --header-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+        
+        /* النوافذ الجانبية (تسجيل الدخول والسلة) */
+        .sidebar-drawer {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 350px;
+            height: 100%;
+            background: var(--bg-card);
+            border-right: 2px solid #00b4d8;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-drawer.active {
+            left: 0;
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 19, 41, 0.7);
+            z-index: 1999;
+            display: none;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        .close-sidebar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .close-sidebar-btn:hover {
+            color: #ff4757;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #3a506b;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 14px;
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: #00b4d8;
+            box-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
+        }
+        .action-btn {
+            background: #00b4d8;
+            color: #0b1329;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+        .action-btn:hover {
+            background: #0096c7;
+        }
+
+        /* شبكة الكروت والأبعاد المظبوطة هندسياً */
+        .brands-grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            padding: 20px 0;
+        }
+        
+        /* كروت الأقسام الكبيرة عند البداية */
+        .category-main-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+        }
+        .category-main-card:hover {
+            transform: translateY(-8px);
+            border-color: #00b4d8;
+            box-shadow: 0 12px 30px rgba(0, 180, 216, 0.25);
+        }
+        .category-card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .category-main-card:hover .category-card-img {
+            transform: scale(1.05);
+        }
+        .category-card-title {
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(to top, #0b1329, #1c2541);
+            margin-top: auto;
+        }
+
+        /* كروت البراندات والمنتجات */
+        .premium-brand-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 360px;
+        }
+        .premium-brand-card:hover {
+            transform: translateY(-8px);
+            border-color: #00b4d8;
+            box-shadow: 0 12px 30px rgba(0, 180, 216, 0.25);
+        }
+        .brand-logo-img {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #00b4d8;
+            margin-bottom: 15px;
+            background-color: var(--bg-card);
+        }
+        .premium-brand-card h3 {
+            color: var(--text-main);
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .premium-brand-card p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 40px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .view-menu-badge {
+            margin-top: auto;
+            background: rgba(0, 180, 216, 0.1);
+            color: #00b4d8;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .premium-brand-card:hover .view-menu-badge {
+            background: #00b4d8;
+            color: #0b1329;
+        }
+
+        /* التحكم في الكميات الذكية (العداد الذكي اللحظي) */
+        .qty-control {
+            display: flex;
+            align-items: center;
+            background: var(--bg-main);
+            border-radius: 20px;
+            padding: 4px 12px;
+            gap: 15px;
+            margin-top: auto;
+            border: 1px solid var(--border-color);
+        }
+        .qty-btn {
+            background: var(--accent);
+            color: #0b1329;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        /* شاشة الاستلام الناجح الفاخرة */
+        .success-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-main);
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .success-screen.active {
+            display: flex;
+        }
+        .checkmark-circle {
+            width: 90px; height: 90px;
+            background: #2ed573;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            color: white;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(46, 213, 115, 0.4);
+            animation: bounceIn 0.6s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            70% { transform: scale(0.9); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* عناصر السلة */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-main);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #3a506b;
+        }
+        .cart-controls button {
+            background: #3a506b;
+            color: #fff;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .cart-controls button:hover {
+            background: #00b4d8;
+        }
+        
+        /* شريط البحث الاحترافي */
+        .search-wrapper {
+            max-width: 500px;
+            margin: 20px auto 0 auto;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border-radius: 30px;
+            border: 2px solid #3a506b;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 15px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #00b4d8;
+        }
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* زر التبديل بين الوضعين */
+        .theme-toggle-btn {
+            background: var(--bg-card);
+            color: #00b4d8;
+            border: 1px solid #00b4d8;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .theme-toggle-btn:hover {
+            background: #00b4d8;
+            color: #0b1329;
+        }
+    </style>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyC6SFNSHSWA6Te0voBvWvcMpBix9I_UOO0",
+        authDomain: "mako-delivery.firebaseapp.com",
+        projectId: "mako-delivery",
+        storageBucket: "mako-delivery.firebasestorage.app",
+        messagingSenderId: "979331840266",
+        appId: "1:979331840266:web:b3ebc388cd92116cce22f3",
+        measurementId: "G-TST1T23MQW"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+
+      window.db = db;
+      window.collection = collection;
+      window.addDoc = addDoc;
+      window.auth = auth;
+      window.createUser = createUserWithEmailAndPassword;
+      window.signInUser = signInWithEmailAndPassword;
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          window.isLoggedIn = true;
+          let phone = user.email.split('@')[0];
+          window.currentUserPhone = phone;
+          document.getElementById('userInfoDisplay').innerText = `👤 حسابك: ${phone}`;
+          document.getElementById('loginTriggerBtn').style.display = 'none';
+          document.getElementById('checkoutWarning').style.display = 'none';
+          document.getElementById('checkoutForm').style.display = 'block';
+          if(typeof updateCartUI === "function") updateCartUI();
+        }
+      });
+    </script>
+</head>
+<body>
+
+    <div id="successPage" class="success-screen">
+        <div class="checkmark-circle"><i class="fas fa-check"></i></div>
+        <h1 style="color: #00b4d8; font-weight: 900; margin-bottom: 10px;">تم تسجيل طلبك الفوري بنجاح!</h1>
+        <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 30px;">اضغط بالأسفل لإرسال الفاتورة الرسمية والموقع عبر الواتساب لتأكيد خروج الطيار.</p>
+        <a id="whatsappLink" href="#" target="_blank" class="action-btn" style="background: #25D366; color: white; text-decoration: none; display: inline-block; width: auto; padding: 15px 40px; font-size: 18px; border-radius: 30px;">
+            <i class="fab fa-whatsapp" style="margin-left: 8px;"></i>إرسال الطلب عبر WhatsApp
+        </a>
+        <button onclick="location.reload()" style="margin-top: 25px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; text-decoration: underline; font-size: 14px;">العودة للقائمة الرئيسية</button>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeAllDrawers()"></div>
+
+    <div id="loginSidebar" class="sidebar-drawer">
+        <button class="close-sidebar-btn" onclick="closeAllDrawers()"><i class="fas fa-times"></i> إغلاق</button>
+        <h2 style="color: var(--text-main); margin-bottom: 10px; font-weight: 900;">بوابة <span style="color: #00b4d8;">MAKO</span></h2>
+        <p id="authDesc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">قم بتسجيل الدخول لحفظ طلباتك وعنوانك في السحاب.</p>
+        
+        <input type="tel" id="userPhone" class="auth-input" placeholder="رقم الهاتف (مكون من 11 رقم)">
+        <input type="password" id="userPass" class="auth-input" placeholder="كلمة المرور (6 خانات على الأقل)">
+        
+        <button id="mainAuthBtn" onclick="handleAuthNew()" class="action-btn">تسجيل الدخول</button>
+        
+        <p id="toggleAuthMode" style="color: #00b4d8; font-size: 13px; text-align: center; margin-top: 15px; cursor: pointer; font-weight: bold;" onclick="switchAuthMode()">
+            ليس لديك حساب؟ اضغط لإنشاء حساب جديد 🔐
+        </p>
+    </div>
+
+    <div id="cartSidebar" class="sidebar-drawer">
+        <button class="close-sidebar-btn" onclick="closeAllDrawers()"><i class="fas fa-times"></i> إغلاق السلة</button>
+        <h2 style="color: var(--text-main); margin-bottom: 15px; font-weight: 900;"><i class="fas fa-shopping-bag" style="color: #00b4d8;"></i> حقيبة التسوق</h2>
+        
+        <div id="cartItemsList" style="flex-grow: 1; overflow-y: auto; padding-right: 5px;">
+            <p style="text-align: center; color: var(--text-muted); margin-top: 40px;">السلة فارغة حالياً 🛒</p>
+        </div>
+
+        <div style="border-top: 1px solid #3a506b; padding-top: 15px; margin-top: auto;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--text-muted);">
+                <span>إجمالي الأصناف:</span> <span id="cartSubtotal">0 جنيه</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">
+                <span>خدمة التوصيل الفوري:</span> <span id="cartDelivery">0 جنيه</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 18px; font-weight: bold; color: var(--text-main); border-top: 1px dashed #3a506b; padding-top: 10px;">
+                <span>الإجمالي الكلي:</span> <span id="cartTotal" style="color: #00b4d8;">0 جنيه</span>
+            </div>
+
+            <div id="checkoutForm" style="display: none;">
+                <input type="text" id="deliveryAddress" class="auth-input" placeholder="عنوان التوصيل (المنطقة، الشارع، مبنى...)">
+                <button onclick="submitOrderReal()" class="action-btn" style="background: #2ed573; color: #fff;">تأكيد وطلب دليفري فوري 🚀</button>
+            </div>
+            <div id="checkoutWarning" style="text-align: center; color: #ff4757; font-size: 13px; margin-bottom: 10px;">
+                يرجى تسجيل الدخول وإضافة أصناف لتفعيل الطلب.
+            </div>
+        </div>
+    </div>
+
+    <header style="background: var(--header-bg); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00b4d8; position: sticky; top: 0; z-index: 1000;">
+        <div style="color: var(--text-main); font-size: 28px; font-weight: 900; cursor: pointer;" onclick="location.reload()">
+            MAKO<span style="color: #00b4d8;">.</span>
+        </div>
+        
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div id="userInfoDisplay" style="color: #00b4d8; font-size: 14px; font-weight: bold;"></div>
+            
+            <button onclick="toggleTheme()" class="theme-toggle-btn" id="themeBtn" title="تبديل الوضع المظهر">
+                <i class="fas fa-moon"></i>
+            </button>
+
+            <button id="loginTriggerBtn" onclick="openDrawer('loginSidebar')" style="background: #00b4d8; color: #0b1329; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                <i class="fas fa-user-circle"></i> تسجيل الدخول
+            </button>
+
+            <button onclick="contactCustomerService()" style="background: var(--bg-card); color: var(--text-main); border: 1px solid #00b4d8; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                <i class="fas fa-headset" style="color: #00b4d8; margin-left: 5px;"></i> الدعم
+            </button>
+            
+            <div onclick="openDrawer('cartSidebar')" style="position: relative; cursor: pointer; color: var(--text-main); font-size: 24px; margin-right: 5px;">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count" style="position: absolute; top: -10px; right: -12px; background: #00b4d8; color: #0b1329; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">0</span>
+            </div>
+        </div>
+    </header>
+
+    <section style="background: linear-gradient(rgba(11, 19, 41, 0.85), rgba(11, 19, 41, 0.95)), url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80') no-repeat center center/cover; padding: 60px 20px; text-align: center;">
+        <h1 style="font-size: 36px; font-weight: 900; margin-bottom: 8px; color: #fff;">منصة <span style="color: #00b4d8;">MAKO</span> للتوصيل الفوري</h1>
+        <p style="color: #94a3b8; font-size: 16px;">اختر القسم المطلوب للبدء في استعراض القوائم والطلب المباشر</p>
+        
+        <div class="search-wrapper" id="searchBarContainer" style="display: none;">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="menuSearchInput" oninput="searchInMenu()" class="search-input" placeholder="ابحث عن وجبة، حلوى، أو دواء معين...">
+        </div>
+    </section>
+
+    <section id="menu-section" style="padding: 40px 5%; background: var(--bg-main); min-height: 650px;">
+        <div id="shops-container">
+            <div class="brands-grid-layout">
+                <div class="category-main-card" onclick="filterCategory('restaurants')">
+                    <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500&q=80" class="category-card-img" alt="مطاعم">
+                    <div class="category-card-title">🍔 المطاعم والمشويات</div>
+                </div>
+                <div class="category-main-card" onclick="filterCategory('sweets')">
+                    <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=500&q=80" class="category-card-img" alt="حلويات">
+                    <div class="category-card-title">🍰 الحلويات الفاخرة</div>
+                </div>
+                <div class="category-main-card" onclick="filterCategory('cafe')">
+                    <img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500&q=80" class="category-card-img" alt="كافيهات">
+                    <div class="category-card-title">☕ كافيهات ومشروبات</div>
+                </div>
+                <div class="category-main-card" onclick="filterCategory('supermarket')">
+                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80" class="category-card-img" alt="سوبرماركت">
+                    <div class="category-card-title">🛒 السوبر ماركت</div>
+                </div>
+                <div class="category-main-card" onclick="filterCategory('pharmacy')">
+                    <img src="https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&q=80" class="category-card-img" alt="صيدليات">
+                    <div class="category-card-title">💊 صيدليات وروشتات طبية</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="background: var(--bg-main); padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border-color);">
+        <p>© 2026 تطبيق <span style="color: #00b4d8; font-weight: bold;">MAKO</span> - وجهتك الأولى للراحة والسرعة الفائقة</p>
+    </footer>
+
+    <script>
+        // دالة تبديل الثيم الذكية
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const btn = document.getElementById('themeBtn');
+            
+            if (currentTheme === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+                btn.innerHTML = '<i class="fas fa-moon"></i>';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        const realItemsData = {
+            restaurants: [
+                { name: "وجبة بيج ماك لارج كلاسيك لحم بقرى دبل", price: 195, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80" },
+                { name: "ساندوتش ماك تشيكن تشيز سبايسي غرقان جبنة", price: 165, img: "https://images.unsplash.com/photo-1627662236973-4f8259fa2441?w=400&q=80" },
+                { name: "وجبة بازوكا مسحب 5 قطع فراخ مقرمشة جبارة", price: 140, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=400&q=80" },
+                { name: "ساندوتش سنايبر تشيكن كرانشي بصوص الشيدر السايح", price: 155, img: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&q=80" },
+                { name: "وجبة مايتي زنجر بوكس حار نار مع بطاطس لارج", price: 215, img: "https://images.unsplash.com/photo-1513639776629-7b61b0ac598e?w=400&q=80" },
+                { name: "طبق أرز ريزو بقطع الاستربس المقرمشة وباربكيو صوص", price: 75, img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80" },
+                { name: "بيتزا سوبر سوبريم إيطالي أطراف جبنة حجم وسط", price: 190, img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80" }
+            ],
+            sweets: [
+                { name: "قشطوطة بالمانجو الإسمعلاوي الفريش والقطع الكبيرة بـ لبن", price: 75, img: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&q=80" },
+                { name: "المخترعة ميكس بسبوسة وكنافة وقشطة وسمن بلدي غني", price: 95, img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&q=80" },
+                { name: "طاجن السعادة الساخن بقطع الشيكولاتة النوتيلا واللوتس الأصلي", price: 70, img: "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=400&q=80" }
+            ],
+            cafe: [
+                { name: "إيس كراميل ماكياتو مثلج ستاربكس بريميوم لارج غني كافيين", price: 95, img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400&q=80" },
+                { name: "سبانش لاتيه ساخن قهوة محمسة ومطحونة مضبوطة طحن كوستا", price: 85, img: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=80" }
+            ],
+            supermarket: [
+                { name: "جبنة شيدر نيوزيلاندي مستوردة قالب وزن 250 جرام فاخر مترو", price: 75, img: "https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=400&q=80" },
+                { name: "زجاجة زيت ذرة كريستال نقية صافية سعة 1 لتر كاملة كارفور", price: 98, img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80" }
+            ],
+            pharmacy: [
+                { name: "علبة بنادول اكسترا Panadol الأحمر الأصلي المسكن الفعال العزبي", price: 45, img: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&q=80" },
+                { name: "صن بلوك لاروش بوزيه الحماية القصوى للبشرة من الشمس صيدليات مصر", price: 450, img: "https://images.unsplash.com/photo-1608248597481-496100c8c836?w=400&q=80" }
+            ]
+        };
+
+        const fallbackDefaultImages = {
+            restaurants: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&q=80",
+            sweets: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=500&q=80",
+            cafe: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500&q=80",
+            supermarket: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80",
+            pharmacy: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&q=80"
+        };
+
+        const brandSetup = {
+            restaurants: [
+                { name: "ماكدونالدز - McDonald's", logo: "https://images.unsplash.com/photo-1619252584172-a83a949b6efd?w=400&q=80", desc: "أشهر السندوتشات والبرجر والبطاطس المقرمشة العالمية" },
+                { name: "بازوكا - Bazooka", logo: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80", desc: "ملك الفرايد تشيكن المقرمش والبرجر الغرقان جبنة سايحة" }
+            ],
+            sweets: [
+                { name: "بـ لَبَن - B-Laban", logo: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&q=80", desc: "أشهر محلات القنبلة، القشطوطة، والمخترعة الساحرة" }
+            ],
+            cafe: [
+                { name: "ستاربكس - Starbucks", logo: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400&q=80", desc: "عشاق القهوة والمشروبات الباردة والساخنة والمزاج العالي" }
+            ],
+            supermarket: [
+                { name: "مترو ماركت - Metro", logo: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80", desc: "كافة منتجات البقالة والأجبان ومقاضي البيت اليومية" }
+            ],
+            pharmacy: [
+                { name: "صيدليات العزبي", logo: "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?w=400&q=80", desc: "صيدليتك الموثوقة لتجهيز الروشتات ومستحضرات التجميل" }
+            ]
+        };
+
+        const database = { restaurants: [], sweets: [], cafe: [], supermarket: [], pharmacy: [] };
+
+        Object.keys(brandSetup).forEach(category => {
+            brandSetup[category].forEach(brand => {
+                let fullGeneratedMenu = [];
+                let baseList = realItemsData[category];
+                
+                for (let i = 0; i < 15; i++) {
+                    let itemTemplate = baseList[i % baseList.length];
+                    let priceVariant = itemTemplate.price + ((i % 3) * 10);
+                    fullGeneratedMenu.push({
+                        id: `${category}_${brand.name.replace(/\s+/g, '')}_${i}`,
+                        name: `${itemTemplate.name} (خيار ${i + 1})`,
+                        price: priceVariant,
+                        img: itemTemplate.img
+                    });
+                }
+                database[category].push({ name: brand.name, logo: brand.logo, desc: brand.desc, menu: fullGeneratedMenu });
+            });
+        });
+
+        let cart = {}; 
+        let currentCategory = "";
+        let currentShopIndex = null;
+        let currentDeliveryFee = 25;
+        let currentAuthMode = "login";
+
+        function openDrawer(drawerId) {
+            closeAllDrawers();
+            document.getElementById(drawerId).classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        function closeAllDrawers() {
+            document.getElementById('loginSidebar').classList.remove('active');
+            document.getElementById('cartSidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        function switchAuthMode() {
+            if (currentAuthMode === "login") {
+                currentAuthMode = "register";
+                document.getElementById('authDesc').innerText = "أهلاً بك! أنشئ حسابك الآن برقم موبايلك.";
+                document.getElementById('mainAuthBtn').innerText = "إنشاء حساب جديد ✨";
+                document.getElementById('toggleAuthMode').innerText = "لديك حساب بالفعل؟ سجل دخولك من هنا 🔑";
+            } else {
+                currentAuthMode = "login";
+                document.getElementById('authDesc').innerText = "قم بتسجيل الدخول لحفظ طلباتك وعنوانك في السحاب.";
+                document.getElementById('mainAuthBtn').innerText = "تسجيل الدخول";
+                document.getElementById('toggleAuthMode').innerText = "ليس لديك حساب؟ اضغط لإنشاء حساب جديد 🔐";
+            }
+        }
+
+        async function handleAuthNew() {
+            const phone = document.getElementById('userPhone').value.trim();
+            const pass = document.getElementById('userPass').value.trim();
+
+            if (phone.length < 11) {
+                alert("🚨 يرجى كتابة رقم هاتف صحيح مكون من 11 رقم.");
+                return;
+            }
+            if (pass.length < 6) {
+                alert("🚨 للأمان، يجب ألا تقل كلمة المرور عن 6 خانات.");
+                return;
+            }
+
+            const fakeEmail = `${phone}@mako.com`;
+
+            try {
+                if (currentAuthMode === "register") {
+                    await window.createUser(window.auth, fakeEmail, pass);
+                    alert("🎉 مبروك يا فنان! تم إنشاء حسابك الحقيقي بنجاح في نظام MAKO.");
+                } else {
+                    await window.signInUser(window.auth, fakeEmail, pass);
+                    alert("🔑 تم تسجيل الدخول بنجاح! أهلاً بك مجدداً.");
+                }
+                closeAllDrawers();
+            } catch (error) {
+                console.error(error.code);
+                if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
+                    alert("❌ خطأ: كلمة المرور غير صحيحة أو الحساب غير موجود!");
+                } else if (error.code === "auth/email-already-in-use") {
+                    alert("🚨 هذا الهاتف مسجل بالفعل! جرب تسجيل الدخول بدلاً من إنشاء حساب.");
+                } else {
+                    alert("🚨 حدث خطأ: " + error.message);
+                }
+            }
+        }
+
+        function showMainCategories() {
+            document.getElementById('searchBarContainer').style.display = 'none';
+            const container = document.getElementById('shops-container');
+            container.innerHTML = `
+                <div class="brands-grid-layout">
+                    <div class="category-main-card" onclick="filterCategory('restaurants')">
+                        <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=500&q=80" class="category-card-img" alt="مطاعم">
+                        <div class="category-card-title">🍔 المطاعم والمشويات</div>
+                    </div>
+                    <div class="category-main-card" onclick="filterCategory('sweets')">
+                        <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=500&q=80" class="category-card-img" alt="حلويات">
+                        <div class="category-card-title">🍰 الحلويات الفاخرة</div>
+                    </div>
+                    <div class="category-main-card" onclick="filterCategory('cafe')">
+                        <img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500&q=80" class="category-card-img" alt="كافيهات">
+                        <div class="category-card-title">☕ كافيهات ومشروبات</div>
+                    </div>
+                    <div class="category-main-card" onclick="filterCategory('supermarket')">
+                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80" class="category-card-img" alt="سوبرماركت">
+                        <div class="category-card-title">🛒 السوبر ماركت</div>
+                    </div>
+                    <div class="category-main-card" onclick="filterCategory('pharmacy')">
+                        <img src="https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&q=80" class="category-card-img" alt="صيدليات">
+                        <div class="category-card-title">💊 صيدليات وروشتات طبية</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.getElementById('searchBarContainer').style.display = 'none';
+            const container = document.getElementById('shops-container');
+            
+            let gridHTML = `
+                <button onclick="showMainCategories()" style="background:var(--bg-main); color:#00b4d8; border:1px solid #00b4d8; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer; margin-bottom:20px; font-size:14px;"><i class="fas fa-th-large"></i> العودة للأقسام الرئيسية</button>
+                <div class="brands-grid-layout">
+            `;
+            
+            database[category].forEach((shop, index) => {
+                gridHTML += `
+                    <div class="premium-brand-card" onclick="showBrandMenu(${index})">
+                        <img src="${shop.logo}" class="brand-logo-img" alt="${shop.name}" onerror="this.src='${fallbackDefaultImages[category]}'">
+                        <div>
+                            <h3>${shop.name}</h3>
+                            <p>${shop.desc}</p>
+                        </div>
+                        <span class="view-menu-badge">عرض المنتجات 📂</span>
+                    </div>
+                `;
+            });
+            gridHTML += `</div>`;
+            container.innerHTML = gridHTML;
+        }
+
+        function showBrandMenu(shopIndex) {
+            currentShopIndex = shopIndex;
+            document.getElementById('searchBarContainer').style.display = 'block';
+            renderMenu(database[currentCategory][shopIndex].menu);
+        }
+
+        function renderMenu(menuItems) {
+            const container = document.getElementById('shops-container');
+            let menuHTML = `
+                <button onclick="filterCategory('${currentCategory}')" style="background:var(--bg-main); color:#00b4d8; border:1px solid #00b4d8; padding:10px 18px; border-radius:6px; font-weight:bold; cursor:pointer; margin-bottom:20px; font-size:14px;"><i class="fas fa-arrow-right"></i> العودة للبراندات</button>
+                <div class="brands-grid-layout">
+            `;
+
+            menuItems.forEach(item => {
+                const currentQty = cart[item.id] ? cart[item.id].qty : 0;
+                menuHTML += `
+                    <div class="premium-brand-card" style="height: auto;">
+                        <img src="${item.img}" style="width:100%; height:160px; object-fit:cover; border-radius:12px;" onerror="this.src='${fallbackDefaultImages[currentCategory]}'">
+                        <h4 style="margin:12px 0 6px 0; font-size:15px; color:var(--text-main); text-align:right; width:100%; font-weight:700;">${item.name}</h4>
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-bottom:12px;">
+                            <span style="color:var(--text-muted); font-size:13px;">السعر الصافي</span>
+                            <span style="color:#00b4d8; font-weight:bold; font-size:16px;">${item.price} جنيه</span>
+                        </div>
+                        <div class="qty-control" style="width:100%; justify-content: space-between;">
+                            <button class="qty-btn" onclick="updateItemQty('${item.id}', '${item.name}', ${item.price}, 1)">+</button>
+                            <span id="display-qty-${item.id}" style="font-weight:bold; font-size:16px;">${currentQty}</span>
+                            <button class="qty-btn" style="background:#3a506b; color:#fff;" onclick="updateItemQty('${item.id}', '${item.name}', ${item.price}, -1)">-</button>
+                        </div>
+                    </div>
+                `;
+            });
+            menuHTML += `</div>`;
+            container.innerHTML = menuHTML;
+        }
+
+        function updateItemQty(id, name, price, delta) {
+            if (!cart[id]) {
+                cart[id] = { name: name, price: price, qty: 0 };
+            }
+            cart[id].qty += delta;
+            if (cart[id].qty <= 0) {
+                delete cart[id];
+            }
+            
+            // تحديث رقم العداد داخل كارت الوجبة فورياً إذا كان معروضاً أمام العميل
+            const qtyElement = document.getElementById(`display-qty-${id}`);
+            if (qtyElement) {
+                qtyElement.innerText = cart[id] ? cart[id].qty : 0;
+            }
+
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cartItemsList');
+            let subtotal = 0;
+            let totalItemsCount = 0;
+            let html = "";
+
+            Object.keys(cart).forEach(id => {
+                const item = cart[id];
+                const itemCost = item.qty * item.price;
+                subtotal += itemCost;
+                totalItemsCount += item.qty;
+
+                html += `
+                    <div class="cart-item">
+                        <div style="flex-grow:1; max-width:65%;">
+                            <div style="font-size:13px; font-weight:bold; color:var(--text-main);">${item.name}</div>
+                            <div style="font-size:12px; color:#00b4d8; margin-top:3px;">${item.price} ج × ${item.qty}</div>
+                        </div>
+                        <div class="cart-controls" style="display:flex; gap:6px; align-items:center;">
+                            <button onclick="updateItemQty('${id}', '${item.name}', ${item.price}, 1)">+</button>
+                            <span style="font-size:14px; font-weight:bold; min-width:15px; text-align:center;">${item.qty}</span>
+                            <button onclick="updateItemQty('${id}', '${item.name}', ${item.price}, -1)">-</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (Object.keys(cart).length === 0) {
+                list.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 40px;">السلة فارغة حالياً 🛒</p>`;
+                document.getElementById('cartDelivery').innerText = "0 جنيه";
+                document.getElementById('cartTotal').innerText = "0 جنيه";
+                document.getElementById('cartSubtotal').innerText = "0 جنيه";
+                document.getElementById('cart-count').innerText = "0";
+                return;
+            }
+
+            list.innerHTML = html;
+            document.getElementById('cartSubtotal').innerText = subtotal + " جنيه";
+            document.getElementById('cartDelivery').innerText = currentDeliveryFee + " جنيه";
+            
+            const grandTotal = subtotal + currentDeliveryFee;
+            document.getElementById('cartTotal').innerText = grandTotal + " جنيه";
+            document.getElementById('cart-count').innerText = totalItemsCount;
+        }
+
+        function searchInMenu() {
+            const query = document.getElementById('menuSearchInput').value.toLowerCase().trim();
+            if (currentShopIndex === null) return;
+            
+            const allShopItems = database[currentCategory][currentShopIndex].menu;
+            const filtered = allShopItems.filter(item => item.name.toLowerCase().includes(query));
+            renderMenu(filtered);
+        }
+
+        function contactCustomerService() {
+            alert("📞 جاري تحويلك لخدمة عملاء طيران MAKO الفوري الموحد عن طريق الخط الساخن.");
+        }
+
+        async function submitOrderReal() {
+            const address = document.getElementById('deliveryAddress').value.trim();
+            const totalText = document.getElementById('cartTotal').innerText;
+
+            if (!address) {
+                alert("🚨 أضف عنوان تفصيلي دقيق لتسهيل عمل طيار MAKO السريع!");
+                return;
+            }
+            if (totalText === "0 جنيه") {
+                alert("🛒 سلتك فارغة! تصفح المنيوهات وأضف بعض الوجبات أولاً.");
+                return;
+            }
+
+            // بناء الفاتورة المنظمة
+            let orderSummary = `🚀 *طلب توصيل فوري جديد عبر منصة MAKO* \n\n`;
+            orderSummary += `👤 *هاتف العميل المسجل:* ${window.currentUserPhone || "غير مسجل"}\n`;
+            orderSummary += `📍 *عنوان التوصيل السريع:* ${address}\n\n`;
+            orderSummary += `📦 *تفاصيل الفاتورة النظيفة:*\n`;
+
+            Object.keys(cart).forEach(id => {
+                const item = cart[id];
+                orderSummary += `• ${item.name} | العدد: [ ${item.qty} ] -> بسعر: ${item.price * item.qty} ج\n`;
+            });
+
+            orderSummary += `\n💰 *الحساب الإجمالي الكلي المالي:* ${totalText}`;
+
+            try {
+                if (window.isLoggedIn && window.db) {
+                    await window.addDoc(window.collection(window.db, "orders"), {
+                        phone: window.currentUserPhone || "unknown",
+                        address: address,
+                        total: totalText,
+                        items: cart,
+                        timestamp: new Date()
+                    });
+                }
+            } catch (e) {
+                console.error("Firebase backup error: ", e);
+            }
+
+            // تجهيز رابط الواتساب الحقيقي
+            const cleanWhatsappUrl = `https://wa.me/201000000000?text=${encodeURIComponent(orderSummary)}`;
+            document.getElementById('whatsappLink').href = cleanWhatsappUrl;
+
+            // إظهار صفحة النجاح الفاخرة
+            document.getElementById('successPage').classList.add('active');
+            cart = {};
+            updateCartUI();
+            closeAllDrawers();
+        }
+    </script>
+</body>
+</html>
